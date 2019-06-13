@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"text/template"
 )
 
 func sayhelloName(w http.ResponseWriter, r *http.Request) {
@@ -20,9 +21,22 @@ func sayhelloName(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello astaxie!") //ここでwに入るものがクライアントに出力されます。
 }
 
+func login(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("method:", r.Method)
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles("login.gptl")
+		t.Execute(w, nil)
+	} else {
+		r.ParseForm()
+		fmt.Println("username:", r.Form["username"])
+		fmt.Println("password:", r.Form["password"])
+	}
+}
+
 func main() {
-	http.HandleFunc("/", sayhelloName)       //アクセスのルーティングを設定します。
-	err := http.ListenAndServe(":9090", nil) //監視するポートを設定します。
+	http.HandleFunc("/", sayhelloName) //アクセスのルーティングを設定します。
+	http.HandleFunc("/login", login)
+	err := http.ListenAndServe(":8080", nil) //監視するポートを設定します。
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
